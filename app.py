@@ -19,9 +19,8 @@ mongo = PyMongo(app)
 def plants_list():
     """Display the plants list page."""
 
-    # TODO: Replace the following line with a database call to retrieve *all*
-    # plants from the Mongo database's `plants` collection.
-    plants_data = ''
+    # Retrieve all plants from the database
+    plants_data = list(mongo.db.plants.find())
 
     context = {
         'plants': plants_data,
@@ -37,19 +36,17 @@ def about():
 def create():
     """Display the plant creation page & process data from the creation form."""
     if request.method == 'POST':
-        # TODO: Get the new plant's name, variety, photo, & date planted, and 
-        # store them in the object below.
+        # Gather data from form
         new_plant = {
-            'name': '',
-            'variety': '',
-            'photo_url': '',
-            'date_planted': ''
+            'name': request.form.get('name'),
+            'variety': request.form.get('variety'),
+            'photo_url': request.form.get('photo_url'),
+            'date_planted': request.form.get('date_planted')
         }
-        # TODO: Make an `insert_one` database call to insert the object into the
-        # database's `plants` collection, and get its inserted id. Pass the 
-        # inserted id into the redirect call below.
+        # Insert new plant into database
+        result = mongo.db.plants.insert_one(new_plant)
 
-        return redirect(url_for('detail', plant_id=''))
+        return redirect(url_for('detail', plant_id=str(result.inserted_id)))
 
     else:
         return render_template('create.html')
@@ -58,15 +55,14 @@ def create():
 def detail(plant_id):
     """Display the plant detail page & process data from the harvest form."""
 
-    # TODO: Replace the following line with a database call to retrieve *one*
-    # plant from the database, whose id matches the id passed in via the URL.
-    plant_to_show = ''
+    # Retrieve the plant with matching plant_id
+    plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
 
     # TODO: Use the `find` database operation to find all harvests for the
     # plant's id.
     # HINT: This query should be on the `harvests` collection, not the `plants`
     # collection.
-    harvests = ''
+    harvests = list(mongo.db.harvests.find({'plant_id': plant_id}))
 
     context = {
         'plant' : plant_to_show,
