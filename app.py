@@ -90,7 +90,14 @@ def edit(plant_id):
     """Shows the edit page and accepts a POST request with edited data."""
     if request.method == 'POST':
         # Update plant with given plant_id
-
+        updated_fields = {
+            '$set' : {
+                'name': request.form.get('name'),
+                'variety': request.form.get('variety'),
+                'photo_url': request.form.get('photo_url'),
+                'date_planted': request.form.get('date_planted')
+                }
+        }
         
         return redirect(url_for('detail', plant_id=plant_id))
     else:
