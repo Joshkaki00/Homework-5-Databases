@@ -80,8 +80,8 @@ def harvest(plant_id):
         'plant_id': plant_id
     }
 
-    # TODO: Make an `insert_one` database call to insert the object into the 
-    # `harvests` collection of the database.
+    # Insert new harvest into database
+    mongo.db.harvests.insert_one(new_harvest)
 
     return redirect(url_for('detail', plant_id=plant_id))
 
