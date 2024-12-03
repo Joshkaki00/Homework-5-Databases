@@ -58,10 +58,7 @@ def detail(plant_id):
     # Retrieve the plant with matching plant_id
     plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
 
-    # TODO: Use the `find` database operation to find all harvests for the
-    # plant's id.
-    # HINT: This query should be on the `harvests` collection, not the `plants`
-    # collection.
+    # Find all harvests associated with this plant
     harvests = list(mongo.db.harvests.find({'plant_id': plant_id}))
 
     context = {
@@ -76,11 +73,10 @@ def harvest(plant_id):
     Accepts a POST request with data for 1 harvest and inserts into database.
     """
 
-    # TODO: Create a new harvest object by passing in the form data from the
-    # detail page form.
+    # Create new harvest object
     new_harvest = {
-        'quantity': '', # e.g. '3 tomatoes'
-        'date': '',
+        'quantity': request.form.get('quantity'), # e.g. '3 tomatoes'
+        'date': request.form.get('date'),
         'plant_id': plant_id
     }
 
