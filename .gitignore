@@ -233,4 +233,7 @@ pyrightconfig.json
 pyvenv.cfg
 pip-selfcheck.json
 
+VS Code config
+.vscode/
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,git,venv
