@@ -89,8 +89,7 @@ def harvest(plant_id):
 def edit(plant_id):
     """Shows the edit page and accepts a POST request with edited data."""
     if request.method == 'POST':
-        # TODO: Make an `update_one` database call to update the plant with the
-        # given id. Make sure to put the updated fields in the `$set` object.
+        # Update plant with given plant_id
 
         
         return redirect(url_for('detail', plant_id=plant_id))
