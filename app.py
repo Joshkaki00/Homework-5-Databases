@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, render_template, url_for
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 
 ############################################################
 # SETUP
@@ -55,8 +56,11 @@ def create():
 def detail(plant_id):
     """Display the plant detail page & process data from the harvest form."""
 
-    # Retrieve the plant with matching plant_id
-    plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
+    try:
+        # Validate and convert plant_id to ObjectId
+        plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
+    except (InvalidId, TypeError):
+        return "Invalid plant ID", 400
 
     # Find all harvests associated with this plant
     harvests = list(mongo.db.harvests.find({'plant_id': plant_id}))
