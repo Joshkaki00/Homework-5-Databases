@@ -30,7 +30,7 @@
                 
                 <label>
                     Amount harvested
-                    <input type="text" name="harvested_amount" placeholder="e.g. 2 tomatoes">
+                    <input type="text" name="quantity" placeholder="e.g. 2 tomatoes">
                 </label>
 
                 <label>
@@ -46,7 +46,7 @@
 
             <ul>
                 {% for harvest in plant['harvests'] %}
-                    <li>{{ harvest['date'] }}: Harvested {{ harvest['harvest_amount'] }}</li>
+                    <li>{{ harvest['date'] }}: Harvested {{ harvest['quantity'] }}</li>
                 {% endfor %}
             </ul>
         </section>
