@@ -1,7 +1,6 @@
 from flask import Flask, request, redirect, render_template, url_for
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
-from bson.errors import InvalidId
 
 ############################################################
 # SETUP
@@ -19,9 +18,8 @@ mongo = PyMongo(app)
 @app.route('/')
 def plants_list():
     """Display the plants list page."""
-
-    # Retrieve all plants from the database
-    plants_data = list(mongo.db.plants.find())
+    # Retrieve all plants from the MongoDB `plants` collection.
+    plants_data = mongo.db.plants.find()
 
     context = {
         'plants': plants_data,
@@ -37,14 +35,13 @@ def about():
 def create():
     """Display the plant creation page & process data from the creation form."""
     if request.method == 'POST':
-        # Gather data from form
+        # Get the new plant's data from the form and insert into the database.
         new_plant = {
-            'name': request.form.get('name'),
-            'variety': request.form.get('variety'),
-            'photo_url': request.form.get('photo_url'),
-            'date_planted': request.form.get('date_planted')
+            'name': request.form['name'],
+            'variety': request.form['variety'],
+            'photo_url': request.form['photo_url'],
+            'date_planted': request.form['date_planted']
         }
-        # Insert new plant into database
         result = mongo.db.plants.insert_one(new_plant)
 
         return redirect(url_for('detail', plant_id=str(result.inserted_id)))
@@ -55,21 +52,14 @@ def create():
 @app.route('/plant/<plant_id>')
 def detail(plant_id):
     """Display the plant detail page & process data from the harvest form."""
+    # Retrieve the plant with the given ID from the MongoDB `plants` collection.
+    plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
 
-    try:
-        # Validate and convert plant_id to ObjectId
-        plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
-    except (InvalidId, TypeError):
-        return "Invalid plant ID", 400
-
-    if not plant_to_show:
-        return "Plant not found", 404
-
-    # Find all harvests associated with this plant
-    harvests = list(mongo.db.harvests.find({'plant_id': plant_id}))
+    # Retrieve all harvests for the plant from the `harvests` collection.
+    harvests = mongo.db.harvests.find({'plant_id': plant_id})
 
     context = {
-        'plant' : plant_to_show,
+        'plant': plant_to_show,
         'harvests': harvests
     }
     return render_template('detail.html', **context)
@@ -79,21 +69,14 @@ def harvest(plant_id):
     """
     Accepts a POST request with data for 1 harvest and inserts into database.
     """
-    try:
-        plant_id = ObjectId(plant_id)
-    except (InvalidId, TypeError):
-        return "Invalid plant ID", 400
-
-    # Create new harvest object
+    # Create a new harvest object from the form data.
     new_harvest = {
-        'quantity': request.form.get('quantity'), # e.g. '3 tomatoes'
-        'date': request.form.get('date'),
+        'quantity': request.form['quantity'],
+        'date': request.form['date'],
         'plant_id': plant_id
     }
-    if not new_harvest['quantity']:
-        return "Quantity is required", 400
 
-    # Insert new harvest into database
+    # Insert the harvest into the MongoDB `harvests` collection.
     mongo.db.harvests.insert_one(new_harvest)
 
     return redirect(url_for('detail', plant_id=plant_id))
@@ -101,29 +84,22 @@ def harvest(plant_id):
 @app.route('/edit/<plant_id>', methods=['GET', 'POST'])
 def edit(plant_id):
     """Shows the edit page and accepts a POST request with edited data."""
-    try:
-        ObjectId(plant_id)
-    except (InvalidId, TypeError):
-        return "Invalid plant ID", 400
-
     if request.method == 'POST':
-        # Update plant with given plant_id
-        updated_fields = {
-            '$set' : {
-                'name': request.form.get('name'),
-                'variety': request.form.get('variety'),
-                'photo_url': request.form.get('photo_url'),
-                'date_planted': request.form.get('date_planted')
-                }
+        # Update the plant with the new data from the form.
+        updated_plant = {
+            '$set': {
+                'name': request.form['name'],
+                'variety': request.form['variety'],
+                'photo_url': request.form['photo_url'],
+                'date_planted': request.form['date_planted']
+            }
         }
-        mongo.db.plants.update_one({'_id': ObjectId(plant_id)}, updated_fields)
+        mongo.db.plants.update_one({'_id': ObjectId(plant_id)}, updated_plant)
 
         return redirect(url_for('detail', plant_id=plant_id))
     else:
-        # Find the plant with given plant_id
+        # Retrieve the plant to display in the edit form.
         plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
-        if not plant_to_show:
-            return "Plant not found", 404
 
         context = {
             'plant': plant_to_show
@@ -133,19 +109,14 @@ def edit(plant_id):
 
 @app.route('/delete/<plant_id>', methods=['POST'])
 def delete(plant_id):
-    try:
-        ObjectId(plant_id)
-    except (InvalidId, TypeError):
-        return "Invalid plant ID", 400
-
-    # Delete plant with given plant_id
+    """Deletes the plant and all its associated harvests."""
+    # Delete the plant with the given ID from the MongoDB `plants` collection.
     mongo.db.plants.delete_one({'_id': ObjectId(plant_id)})
 
-    # Delete all harvests associated with this plant
+    # Delete all harvests associated with the plant ID from the `harvests` collection.
     mongo.db.harvests.delete_many({'plant_id': plant_id})
 
     return redirect(url_for('plants_list'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3000)
-
+    app.run(debug=True)
