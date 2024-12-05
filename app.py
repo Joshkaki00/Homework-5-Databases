@@ -62,6 +62,9 @@ def detail(plant_id):
     except (InvalidId, TypeError):
         return "Invalid plant ID", 400
 
+    if not plant_to_show:
+        return "Plant not found", 404
+
     # Find all harvests associated with this plant
     harvests = list(mongo.db.harvests.find({'plant_id': plant_id}))
 
@@ -76,6 +79,10 @@ def harvest(plant_id):
     """
     Accepts a POST request with data for 1 harvest and inserts into database.
     """
+    try:
+        ObjectId(plant_id)
+    except (InvalidId, TypeError):
+        return "Invalid plant ID", 400
 
     # Create new harvest object
     new_harvest = {
@@ -83,6 +90,8 @@ def harvest(plant_id):
         'date': request.form.get('date'),
         'plant_id': plant_id
     }
+    if not new_harvest['quantity']:
+        return "Quantity is required", 400
 
     # Insert new harvest into database
     mongo.db.harvests.insert_one(new_harvest)
