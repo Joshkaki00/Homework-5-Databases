@@ -80,7 +80,7 @@ def harvest(plant_id):
     Accepts a POST request with data for 1 harvest and inserts into database.
     """
     try:
-        ObjectId(plant_id)
+        plant_id = ObjectId(plant_id)
     except (InvalidId, TypeError):
         return "Invalid plant ID", 400
 
