@@ -101,6 +101,11 @@ def harvest(plant_id):
 @app.route('/edit/<plant_id>', methods=['GET', 'POST'])
 def edit(plant_id):
     """Shows the edit page and accepts a POST request with edited data."""
+    try:
+        ObjectId(plant_id)
+    except (InvalidId, TypeError):
+        return "Invalid plant ID", 400
+
     if request.method == 'POST':
         # Update plant with given plant_id
         updated_fields = {
@@ -117,6 +122,8 @@ def edit(plant_id):
     else:
         # Find the plant with given plant_id
         plant_to_show = mongo.db.plants.find_one({'_id': ObjectId(plant_id)})
+        if not plant_to_show:
+            return "Plant not found", 404
 
         context = {
             'plant': plant_to_show
@@ -126,6 +133,11 @@ def edit(plant_id):
 
 @app.route('/delete/<plant_id>', methods=['POST'])
 def delete(plant_id):
+    try:
+        ObjectId(plant_id)
+    except (InvalidId, TypeError):
+        return "Invalid plant ID", 400
+
     # Delete plant with given plant_id
     mongo.db.plants.delete_one({'_id': ObjectId(plant_id)})
 
