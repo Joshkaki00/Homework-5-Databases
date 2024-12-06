@@ -1,24 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<main>
+<main id="detail-page">
     <h1>{{ plant.name }}</h1>
-
-    <img src="{{ plant.photo_url }}" alt="Image of {{ plant.name }}">
-
-    <section id="info">
-        <h3>Info</h3>
-
-        <strong>Date Planted:</strong>
-        {{ plant.date_planted }}
-        <br><br>
-
-        <strong>Variety:</strong>
-        {{ plant.variety }}
-        <br><br>
-
-        <a class="nav" href="/edit/{{ plant._id }}">Edit Plant</a><br><br>
-    </section>
+    <img src="{{ plant.photo_url }}" alt="{{ plant.name }}">
+    <p>Date Planted: {{ plant.date_planted }}</p>
+    <p>Variety: {{ plant.variety }}</p>
+    <a href="{{ url_for('edit', plant_id=plant._id) }}" class="nav">Edit Plant</a>
 
     <form action="/harvest/{{ plant._id }}" method="POST">
         <fieldset>
